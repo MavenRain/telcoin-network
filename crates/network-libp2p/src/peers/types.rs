@@ -33,6 +33,22 @@ pub(super) enum PeerIdentity {
     Unidentified(PeerId),
 }
 
+/// Why a peer is exempt from the score model and penalties for the current epoch.
+///
+/// A peer subject to normal scoring has no basis (`None`). The two provenances are kept
+/// distinct on purpose (issue #715): operator allowlisting is sticky - set at construction
+/// and never altered by epoch rotation - whereas validator status is derived live from the
+/// committee sets, so a validator rotating out of committee can never strip operator trust.
+/// Only the exemption *decision* (presence) drives behaviour; the variant is carried for
+/// observability (it names which provenance suppressed a penalty in logs).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum TrustBasis {
+    /// Explicitly allowlisted by the node operator.
+    Operator,
+    /// Sits in a committee this epoch (currently CVV; NVV once #707's follow-ups land).
+    Validator,
+}
+
 /// Events for the `PeerManager`.
 #[derive(Debug)]
 pub(crate) enum PeerEvent {
